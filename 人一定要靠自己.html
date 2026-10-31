@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>五面镜子 · 拼命期的年龄</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:#080b11}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    color:#e6ecf7;-webkit-font-smoothing:antialiased;
+    height:100vh;display:flex;flex-direction:column;
+  }
+  header{
+    padding:14px 18px 10px;flex:0 0 auto;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .h-left{min-width:0}
+  h1{font-size:17px;font-weight:650;letter-spacing:-.2px;margin:0 0 2px}
+  .sub{font-size:10.5px;color:#5f6b80;line-height:1.45}
+  .sub b{color:#8b9ab5;font-weight:550}
+  .h-clock{text-align:right;flex:0 0 auto;padding-top:1px}
+  .clock-date{font-size:10px;color:#5f6b80;letter-spacing:.3px;margin-bottom:2px;white-space:nowrap}
+  .clock-time{
+    font-size:21px;font-weight:300;letter-spacing:.5px;
+    font-variant-numeric:tabular-nums;color:#c8d6ee;
+    text-shadow:0 0 18px rgba(56,232,255,.22);white-space:nowrap;
+  }
+  .tabs{
+    flex:0 0 auto;display:flex;padding:0 16px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:rgba(8,11,17,.97);position:relative;z-index:5;
+  }
+  .tab{
+    flex:1;background:transparent;border:0;border-bottom:2px solid transparent;
+    padding:11px 0 10px;color:#4f5d73;font-size:12px;font-weight:650;
+    font-family:inherit;letter-spacing:1px;cursor:pointer;transition:color .2s,border-color .2s;
+  }
+  .tab.active{color:#5ee0ff;border-bottom-color:#5ee0ff}
+  .tab:not(.active):hover{color:#7a8aa3}
+  .viewport{position:relative;flex:1 1 auto;overflow:hidden;min-height:0}
+  .page{
+    position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    transition:transform .38s cubic-bezier(.32,.72,0,1);will-change:transform;
+  }
+  .page-now { transform: translateX(0); }
+  .page-tl  { transform: translateX(100%); }
+  .page-edit{ transform: translateX(200%); }
+  .viewport[data-page="tl"] .page-now  { transform: translateX(-100%); }
+  .viewport[data-page="tl"] .page-tl   { transform: translateX(0); }
+  .viewport[data-page="tl"] .page-edit { transform: translateX(100%); }
+  .viewport[data-page="edit"] .page-now  { transform: translateX(-200%); }
+  .viewport[data-page="edit"] .page-tl   { transform: translateX(-100%); }
+  .viewport[data-page="edit"] .page-edit { transform: translateX(0); }
+
+  .now-wrap{padding:18px 14px 24px}
+  .now-hero{ text-align:center; margin-bottom:18px; }
+  .now-big-time{
+    font-size:52px;font-weight:200;letter-spacing:-2px;line-height:1;
+    font-variant-numeric:tabular-nums;color:#eaf2ff;
+    text-shadow:0 0 32px rgba(56,232,255,.35);margin-bottom:6px;
+  }
+  .now-big-time small{ font-size:20px;color:#4f5d73;font-weight:400;margin-left:4px;letter-spacing:0; }
+  .now-big-date{ font-size:11px;color:#5f6b80;letter-spacing:.8px; }
+  .now-hero-hint{margin-top:14px;font-size:10.5px;color:#4f5d73;letter-spacing:2px;text-transform:uppercase;}
+  .now-grid{ display:grid;grid-template-columns:1fr;gap:10px;max-width:640px;margin:0 auto; }
+  .nc{
+    background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);
+    border-radius:14px;padding:12px 14px 13px;transition:background .2s,border-color .2s;
+    position:relative;overflow:hidden;
+  }
+  .nc.mine{ border-color:rgba(56,232,255,.3); background:rgba(56,232,255,.035); }
+  .nc.mine .nc-name{color:#5ee0ff}
+  .nc-head{ display:flex;align-items:baseline;gap:7px;margin-bottom:9px;flex-wrap:wrap; }
+  .nc-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;align-self:center;transition:background .3s,box-shadow .3s;}
+  .nc-name{font-size:13px;font-weight:650;letter-spacing:-.1px}
+  .nc-age{
+    font-size:9px;font-weight:800;letter-spacing:.4px;
+    padding:1px 6px;border-radius:3px;
+    background:rgba(255,215,0,.12);color:#ffd23f;
+    border:1px solid rgba(255,210,63,.22);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .nc-age small,.m-age small{
+    font-size:7.5px;
+    color:#a08040;
+    margin-left:2px;
+    font-weight:600;
+    letter-spacing:0;
+  }
+  .nc-tag{
+    font-size:9px;font-weight:700;letter-spacing:.5px;padding:1px 5px;border-radius:3px;
+    background:rgba(255,255,255,.06);color:#7a889e;
+  }
+  .nc-range{margin-left:auto;font-size:9.5px;color:#4f5d73;font-variant-numeric:tabular-nums;letter-spacing:.2px;}
+  .nc-act{font-size:16px;font-weight:600;letter-spacing:-.1px;line-height:1.3;margin-bottom:3px;color:#eaf2ff;transition:color .25s;}
+  .nc-act.idle{ color:#4f5d73;font-weight:400;font-style:italic;font-size:14px; }
+  .nc-note{ font-size:10.5px;color:#6b7a90;line-height:1.45;margin-bottom:9px;min-height:15px; }
+  .nc-progress{ height:3px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;margin-bottom:6px; }
+  .nc-progress i{display:block;height:100%;border-radius:99px;transition:width 1s linear,background .3s;}
+  .nc-foot{display:flex;justify-content:space-between;align-items:baseline;font-size:9.5px;color:#4f5d73;font-variant-numeric:tabular-nums;}
+  .nc-remain{color:#7a8aa3}
+  .nc-next{color:#5f6d82;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;text-align:right;}
+  .nc-next b{color:#8fa2c4;font-weight:600}
+  .now-foot{ text-align:center;margin-top:22px;font-size:10.5px;color:#3f4b5e;letter-spacing:1px; }
+
+  .tl-wrap{ padding:14px 14px 24px; }
+  .tl-tip{font-size:10.5px;color:#5f6b80;margin-bottom:12px;line-height:1.5;padding:0 2px;}
+  .tl-tip b{color:#8b9ab5;font-weight:600}
+  .tl-tip .anchor{color:#ffd23f;font-weight:600;font-variant-numeric:tabular-nums;}
+  .mirror{
+    margin-bottom:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);
+    border-radius:14px;overflow:visible;transition:border-color .2s,background .2s;
+    cursor:pointer;position:relative;
+  }
+  .mirror:hover{background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.1)}
+  .mirror.active{border-color:rgba(56,232,255,.35);background:rgba(56,232,255,.035)}
+  .m-head{ display:flex;align-items:baseline;gap:8px;padding:12px 14px 10px;flex-wrap:wrap; }
+  .m-name{font-size:14px;font-weight:650;letter-spacing:-.2px}
+  .m-age{
+    font-size:9px;font-weight:800;letter-spacing:.4px;
+    padding:1px 6px;border-radius:3px;
+    background:rgba(255,215,0,.1);color:#ffd23f;
+    border:1px solid rgba(255,210,63,.2);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .m-tag{
+    font-size:9.5px;font-weight:700;letter-spacing:.6px;padding:2px 6px;border-radius:4px;
+    background:rgba(255,255,255,.06);color:#7a889e;
+  }
+  .m-hint{font-size:10px;color:#4d5a6e;margin-left:auto;white-space:nowrap}
+  .m-bar{
+    display:flex;height:32px;margin:0 14px;border-radius:6px;background:rgba(255,255,255,.03);
+    position:relative;isolation:isolate;
+  }
+  .seg{height:100%;position:relative;transition:filter .25s,box-shadow .25s,transform .25s;min-width:0;flex-shrink:0;}
+  .seg:first-child{border-top-left-radius:6px;border-bottom-left-radius:6px}
+  .seg:last-child{border-top-right-radius:6px;border-bottom-right-radius:6px}
+  .seg-label{
+    position:absolute;inset:0;font-size:9px;font-weight:600;letter-spacing:.1px;
+    color:rgba(0,0,0,.62);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+    padding:0 3px;line-height:32px;text-align:center;pointer-events:none;
+  }
+  .seg.now{filter:brightness(1.5) saturate(1.2);box-shadow:0 0 0 1.5px rgba(255,255,255,.5),0 0 14px rgba(255,255,255,.2);transform:translateY(-2px);z-index:3;}
+  .seg.now .seg-label{color:rgba(0,0,0,.85);font-weight:800}
+  .now-line{
+    position:absolute;top:-3px;bottom:-3px;width:2px;background:#ff5b5b;
+    box-shadow:0 0 8px rgba(255,91,91,.7);pointer-events:none;z-index:6;border-radius:1px;
+    transition:left 1s linear;display:none;
+  }
+  .now-line.show{display:block}
+  .now-line::before{content:'';position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:#ff5b5b;border-radius:50%;box-shadow:0 0 6px rgba(255,91,91,.9);}
+  .now-bubble{
+    position:absolute;top:calc(100% + 6px);transform:translateX(-50%);
+    background:rgba(14,19,30,.97);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:4px 9px;font-size:10.5px;color:#c8d6ee;line-height:1.4;white-space:nowrap;
+    pointer-events:none;opacity:0;transition:opacity .22s,left 1s linear;z-index:10;
+    box-shadow:0 6px 18px rgba(0,0,0,.6);max-width:calc(100vw - 60px);overflow:hidden;text-overflow:ellipsis;
+  }
+  .now-bubble.show{opacity:1}
+  .m-foot{display:flex;justify-content:space-between;padding:26px 14px 11px;font-size:9px;color:#3f4b5e;font-variant-numeric:tabular-nums;}
+  .detail{ display:none;border-top:1px solid rgba(255,255,255,.05);padding:10px 14px 14px; }
+  .mirror.active .detail{display:block}
+  .d-source{font-size:10px;color:#4f5d73;line-height:1.5;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.06);}
+  .d-source b{color:#7a8aa3;font-weight:600}
+  .d-source .anchor-note{
+    display:block;margin-top:5px;font-size:9.5px;color:#a08040;
+    font-variant-numeric:tabular-nums;
+  }
+  .d-row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;line-height:1.45;}
+  .d-row:last-child{border-bottom:0}
+  .d-time{flex:0 0 auto;width:44px;color:#5f6d82;font-variant-numeric:tabular-nums;font-size:11px;padding-top:1px;}
+  .d-text{flex:1;color:#c3cfe0}
+  .d-ask{
+    margin-top:10px;padding:9px 11px;border-radius:9px;
+    background:rgba(56,232,255,.055);border-left:2px solid rgba(56,232,255,.4);
+    font-size:11.5px;color:#8fc8da;line-height:1.55;
+  }
+  .d-ask b{color:#5ee0ff;font-weight:600}
+  .mine{ border:1px dashed rgba(56,232,255,.25); background:rgba(56,232,255,.02); }
+  .mine .m-name{color:#5ee0ff}
+  .mine-empty{padding:10px 14px 14px;font-size:11px;color:#5f6b80;line-height:1.5;}
+  .mine-empty b{color:#5ee0ff;font-weight:600}
+
+  .edit-wrap{ padding:14px 14px 30px; }
+  .edit-tip{font-size:10.5px;color:#5f6b80;margin-bottom:12px;line-height:1.5;padding:0 2px;}
+  .edit-tip b{color:#8b9ab5;font-weight:600}
+  .edit-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
+  .ec-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .ec-title{font-size:12px;font-weight:650;color:#e6ecf7;letter-spacing:.2px}
+  .ec-meta{font-size:10px;color:#4f5d73;margin-left:auto}
+  .ec-add{background:rgba(56,232,255,.14);border:1px solid rgba(56,232,255,.35);color:#5ee0ff;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;transition:.15s;}
+  .ec-add:hover{background:rgba(56,232,255,.22)}
+  .ep-bar{display:flex;height:28px;border-radius:6px;background:rgba(255,255,255,.03);overflow:hidden;}
+  .ep-bar .seg-label{line-height:28px;font-size:8.5px}
+  .ep-foot{display:flex;justify-content:space-between;padding-top:6px;font-size:9px;color:#3f4b5e;font-variant-numeric:tabular-nums;}
+  .qk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+  .qk-field{display:flex;flex-direction:column;gap:3px}
+  .qk-field label{font-size:9px;color:#5f6d82}
+  .qk-field input{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 8px;color:#e6ecf7;font-size:12px;font-family:inherit;outline:none;width:100%;transition:.15s;}
+  .qk-field input:focus{border-color:rgba(56,232,255,.4);background:rgba(56,232,255,.04)}
+  .qk-btn{width:100%;background:rgba(56,232,255,.14);border:1px solid rgba(56,232,255,.35);color:#5ee0ff;border-radius:9px;padding:9px 0;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:.15s;}
+  .qk-btn:hover{background:rgba(56,232,255,.22)}
+  .seg-list{display:flex;flex-direction:column;gap:6px}
+  .seg-empty{padding:16px 4px;text-align:center;font-size:11px;color:#4f5d73;line-height:1.55;}
+  .seg-row{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:7px 8px;display:flex;flex-direction:column;gap:6px;transition:.15s;}
+  .seg-row:hover{border-color:rgba(255,255,255,.09)}
+  .sr-line1,.sr-line2{display:flex;gap:5px;align-items:center}
+  .sr-line1 input[type=time]{width:72px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:5px 6px;color:#e6ecf7;font-size:11px;font-family:inherit;outline:none;-webkit-appearance:none;}
+  .sr-line1 input[type=time]:focus{border-color:rgba(56,232,255,.4)}
+  .sr-line1 .sr-sep{color:#4f5d73;font-size:10px}
+  .sr-line1 .sr-del{margin-left:auto;background:none;border:none;color:#5d6a84;font-size:14px;cursor:pointer;padding:2px 4px;line-height:1;transition:.15s;}
+  .sr-line1 .sr-del:hover{color:#ff5b5b}
+  .sr-line2 select,.sr-line2 input{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:5px 6px;color:#e6ecf7;font-size:11px;font-family:inherit;outline:none;transition:.15s;}
+  .sr-line2 select{flex:0 0 auto;min-width:88px}
+  .sr-line2 input{flex:1;min-width:0}
+  .sr-line2 select:focus,.sr-line2 input:focus{border-color:rgba(56,232,255,.4);background:rgba(56,232,255,.04)}
+  .edit-actions{display:flex;gap:8px;margin-top:16px;}
+  .edit-actions button{flex:1;border:0;border-radius:9px;padding:10px 0;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:.15s;}
+  .ea-clear{background:rgba(255,91,91,.1);border:1px solid rgba(255,91,91,.28);color:#ff8b8b;}
+  .ea-clear:hover{background:rgba(255,91,91,.18)}
+
+  @media (min-width:600px){
+    .now-grid{grid-template-columns:1fr 1fr}
+    .now-big-time{font-size:64px}
+  }
+  @media (max-width:400px){
+    header{flex-direction:column;gap:6px;padding:12px 16px 8px}
+    .h-clock{text-align:left;align-self:flex-start}
+    .m-hint{display:none}
+    .now-big-time{font-size:46px}
+    .now-wrap{padding:14px 12px 20px}
+    .tl-wrap{padding:12px 12px 24px}
+    .edit-wrap{padding:12px 12px 26px}
+    .qk-grid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-left">
+    <h1>五面镜子</h1>
+    <div class="sub">
+      <b>五个人，五种时间形状。</b>此刻 / 行程 / 我的。
+    </div>
+  </div>
+  <div class="h-clock">
+    <div class="clock-date" id="clockDate">—</div>
+    <div class="clock-time" id="clockTime">--:--:--</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-page="now">此刻</button>
+  <button class="tab" data-page="tl">行程</button>
+  <button class="tab" data-page="edit">我的</button>
+</nav>
+
+<div class="viewport" id="viewport" data-page="now">
+
+  <section class="page page-now">
+    <div class="now-wrap">
+      <div class="now-hero">
+        <div class="now-big-time" id="nowBigTime">--:--<small id="nowBigSec">:--</small></div>
+        <div class="now-big-date" id="nowBigDate">—</div>
+        <div class="now-hero-hint">此刻 · 拼命期的他们在做什么</div>
+      </div>
+      <div class="now-grid" id="nowGrid"></div>
+      <div class="now-foot">← 向左滑 / 点「行程」看完整一天 →</div>
+    </div>
+  </section>
+
+  <section class="page page-tl">
+    <div class="tl-wrap">
+      <div class="tl-tip">
+        <b>红线是此刻。</b>每条行程锚定在人物“最拼命”的年龄版本，年龄锚定于 <span class="anchor" id="anchorDate">—</span>，从那一刻起随真实时间生长。点任意一条展开细节与来源。
+      </div>
+      <div id="list"></div>
+    </div>
+  </section>
+
+  <section class="page page-edit">
+    <div class="edit-wrap">
+      <div class="edit-tip">
+        填写你自己的行程。它会同步显示在<b>「此刻」</b>和<b>「行程」</b>页。所有数据存在本机浏览器里。
+      </div>
+      <div class="edit-card">
+        <div class="ec-head"><span class="ec-title">预览</span><span class="ec-meta" id="editPreviewMeta">0 段</span></div>
+        <div class="ep-bar" id="editPreviewBar"></div>
+        <div class="ep-foot"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+      </div>
+      <div class="edit-card">
+        <div class="ec-head"><span class="ec-title">快速生成</span><span class="ec-meta">一键生成基础时段</span></div>
+        <div class="qk-grid">
+          <div class="qk-field"><label>起床</label><input type="time" id="qkWake" value="07:30"></div>
+          <div class="qk-field"><label>深度块开始</label><input type="time" id="qkDeep" value="09:30"></div>
+          <div class="qk-field"><label>深度块时长(h)</label><input type="number" id="qkDeepLen" min="0" max="12" step="0.5" value="2"></div>
+          <div class="qk-field"><label>收工</label><input type="time" id="qkEnd" value="19:00"></div>
+          <div class="qk-field"><label>睡前</label><input type="time" id="qkSleep" value="23:30"></div>
+          <div class="qk-field"><label>午休(h)</label><input type="number" id="qkNap" min="0" max="3" step="0.5" value="0.5"></div>
+        </div>
+        <button class="qk-btn" id="qkGenerate">按此生成时段</button>
+      </div>
+      <div class="edit-card">
+        <div class="ec-head"><span class="ec-title">时段列表</span><button class="ec-add" id="segAdd">+ 添加时段</button></div>
+        <div class="seg-list" id="segList"></div>
+      </div>
+      <div class="edit-actions"><button class="ea-clear" id="editClear">清空全部</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================================================================
+   0. 工具
+   ================================================================ */
+function pad2(n) { return String(n).padStart(2, '0'); }
+function tToMin(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+function minToLabel(min) {
+  min = Math.round(min) % (24 * 60);
+  if (min < 0) min += 24 * 60;
+  return pad2(Math.floor(min / 60)) + ':' + pad2(min % 60);
+}
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+function formatDate(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+
+/* ================================================================
+   1. 色板
+   ================================================================ */
+const CAT = {
+  sleep:   { color: '#1a2230', glow: '#4a5a70' },
+  ritual:  { color: '#3d4f68', glow: '#5a7090' },
+  body:    { color: '#2a5a4a', glow: '#3f8a70' },
+  labor:   { color: '#4a5a2a', glow: '#7a9a3f' },
+  deep:    { color: '#1f5a6e', glow: '#2f9ab8' },
+  social:  { color: '#5a4a2a', glow: '#a08040' },
+  admin:   { color: '#3a3a4a', glow: '#5f6080' },
+  study:   { color: '#2a3a6a', glow: '#4f6fb8' },
+  free:    { color: '#2a2a33', glow: '#4a4a55' },
+  vice:    { color: '#5a2a2a', glow: '#a04040' },
+};
+
+const CAT_OPTIONS = [
+  { value: 'sleep',  label: '睡眠' },
+  { value: 'ritual', label: '仪式/过渡' },
+  { value: 'body',   label: '身体/恢复' },
+  { value: 'labor',  label: '劳作/杂务' },
+  { value: 'deep',   label: '深度/专注' },
+  { value: 'social', label: '社交/排场' },
+  { value: 'admin',  label: '文书/行政' },
+  { value: 'study',  label: '读书/自修' },
+  { value: 'free',   label: '空白/未记录' },
+  { value: 'vice',   label: '透支/纵欲' },
+];
+
+/* ================================================================
+   2. 年龄锚定
+   - 第一次打开时把“现在”记为锚点
+   - 年龄 = peakAge + (现在 - 锚点) / 365.25 天
+   ================================================================ */
+const ANCHOR_KEY = 'flywheel.anchor.v1';
+const MS_PER_YEAR = 365.25 * 86400_000;
+let ANCHOR_TS = null;
+
+function getAnchorTs() {
+  if (ANCHOR_TS !== null) return ANCHOR_TS;
+  try {
+    const s = localStorage.getItem(ANCHOR_KEY);
+    const n = s ? Number(s) : NaN;
+    if (Number.isFinite(n) && n > 0) {
+      ANCHOR_TS = n;
+    } else {
+      ANCHOR_TS = Date.now();
+      localStorage.setItem(ANCHOR_KEY, String(ANCHOR_TS));
+    }
+  } catch (e) {
+    ANCHOR_TS = Date.now();
+  }
+  return ANCHOR_TS;
+}
+
+function ageInfo(p) {
+  const now = Date.now();
+  const anchor = getAnchorTs();
+  const elapsedMs = Math.max(0, now - anchor);
+  const elapsedYears = elapsedMs / MS_PER_YEAR;
+  const ageFloat = p.peakAge + elapsedYears;
+  const ageInt = Math.floor(ageFloat);
+  const elapsedDays = Math.floor(elapsedMs / 86400_000);
+  return { ageInt, ageFloat, elapsedDays, elapsedYears };
+}
+
+function ageInnerHtml(p) {
+  const info = ageInfo(p);
+  const dayStr = info.elapsedDays > 0 ? `<small>+${info.elapsedDays}天</small>` : '';
+  return `${info.ageInt}岁${dayStr}`;
+}
+
+/* ================================================================
+   3. 人物数据 · 拼命期年龄锚定
+   ================================================================ */
+const PEOPLE = [
+  {
+    id: 'li',
+    name: '李嘉诚',
+    peakAge: 17,
+    tag: '推销员 · 16小时',
+    hint: '17岁 · 人家做8小时，他做16小时',
+    source: '<b>来源：</b>多家李嘉诚传记交叉记载。17岁在塑胶厂做推销员，“人家做8小时，我就做16小时”；早上9点上班前已出门发掘客户，晚上坚持自修；创业初期仍保持每天至少16小时工作。',
+    ask: '你17岁时的一天，被多少个小时的“必须做”填满？',
+    segs: [
+      { a: 0, b: 4*60+30, cat: 'sleep', label: '睡眠' },
+      { a: 4*60+30, b: 5*60, cat: 'ritual', label: '起床 / 准备' },
+      { a: 5*60, b: 9*60, cat: 'labor', label: '上班前发掘客户', note: '赶到别人上班时，他已经在门口等了' },
+      { a: 9*60, b: 12*60, cat: 'labor', label: '推销 / 跑街' },
+      { a: 12*60, b: 12*60+30, cat: 'free', label: '午饭' },
+      { a: 12*60+30, b: 17*60, cat: 'labor', label: '推销 / 跑街' },
+      { a: 17*60, b: 18*60, cat: 'free', label: '晚饭' },
+      { a: 18*60, b: 21*60, cat: 'labor', label: '回厂 / 处理订单' },
+      { a: 21*60, b: 23*60, cat: 'study', label: '夜间自修', note: '工作16小时后仍坚持学习' },
+      { a: 23*60, b: 24*60, cat: 'sleep', label: '睡眠' },
+    ],
+  },
+  {
+    id: 'hu_x',
+    name: '胡雪岩 · 学徒',
+    peakAge: 20,
+    tag: '钱庄学徒 · 12小时+',
+    hint: '20岁 · 擦铜招牌 · 头两个月不出店门',
+    source: '<b>来源：</b>《胡雪岩传》及《杭州金融史》记载。1842年前后进入阜康钱庄学徒，每日劳作十二小时以上；清晨先擦拭钱庄内外铜招牌至锃亮，随后清理内务；白天“坐庄”练算银票、包银元、辨白银成色；头两个月日夜苦练，几乎不出店门。',
+    ask: '你的20岁，有没有为一件事连续两个月不出门？',
+    segs: [
+      { a: 0, b: 5*60, cat: 'sleep', label: '睡眠' },
+      { a: 5*60, b: 5*60+30, cat: 'ritual', label: '起床 / 倒夜壶' },
+      { a: 5*60+30, b: 6*60, cat: 'ritual', label: '擦铜招牌', note: '钱庄内外，锃亮如镜' },
+      { a: 6*60, b: 7*60, cat: 'labor', label: '打水扫地 / 买早点' },
+      { a: 7*60, b: 12*60, cat: 'deep', label: '坐庄 / 练基本功', note: '算银票、包银元、辨白银成色' },
+      { a: 12*60, b: 12*60+30, cat: 'free', label: '午饭' },
+      { a: 12*60+30, b: 18*60, cat: 'labor', label: '杂务 / 跑外勤' },
+      { a: 18*60, b: 19*60, cat: 'free', label: '晚饭' },
+      { a: 19*60, b: 23*60, cat: 'deep', label: '日夜苦练基本功', note: '头两个月几乎不出店门' },
+      { a: 23*60, b: 24*60, cat: 'sleep', label: '就寝' },
+    ],
+  },
+  {
+    id: 'li_hz',
+    name: '李鸿章',
+    peakAge: 24,
+    tag: '年轻翰林 · 近午才起',
+    hint: '24岁 · 中进士 · 被曾国藩责备睡懒觉',
+    source: '<b>来源：</b>李鸿章生于1823年，道光二十七年（1847年）24岁中进士、选翰林院庶吉士，同时受业曾国藩门下。他“早年近午才起床，一度被曾国藩责备”；曾国藩用“共进早餐”的规矩强行纠正。此条为24岁翰林院时期的推演性还原，核心事件有明确记载，具体时刻为合理推演。',
+    ask: '你24岁时，有没有人逼你改掉一个连自己都知道不对的习惯？',
+    segs: [
+      { a: 0, b: 10*60, cat: 'sleep', label: '睡眠', note: '近午才起，被曾国藩责备' },
+      { a: 10*60, b: 11*60, cat: 'ritual', label: '起床 / 梳洗' },
+      { a: 11*60, b: 12*60, cat: 'free', label: '早午饭' },
+      { a: 12*60, b: 14*60, cat: 'study', label: '临帖 / 读书', note: '受业曾国藩门下，习书法' },
+      { a: 14*60, b: 17*60, cat: 'admin', label: '翰林院公事 / 庶吉士课业' },
+      { a: 17*60, b: 18*60, cat: 'free', label: '晚饭' },
+      { a: 18*60, b: 22*60, cat: 'study', label: '夜读 / 写文章', note: '年轻翰林，晚间精力最盛' },
+      { a: 22*60, b: 24*60, cat: 'free', label: '闲聊 / 就寝' },
+    ],
+  },
+  {
+    id: 'zgf',
+    name: '曾国藩',
+    peakAge: 30,
+    tag: '日课十二条 · 自省',
+    hint: '30岁 · 黎明即起 · 读史十页',
+    source: '<b>来源：</b>曾国藩生于1811年，30岁（约1840-1841年）开始立“学做圣人”之志，订日课十二条：黎明即起、静坐四刻、读史十页、饭后写字半时、夜不出门等。此条为日课十二条的逐条落实，具体时刻为基于日记与准则的合理还原。',
+    ask: '你30岁时，有没有给自己定过十二条每天必须遵守的“笨规矩”？',
+    segs: [
+      { a: 0, b: 5*60, cat: 'sleep', label: '睡眠' },
+      { a: 5*60, b: 6*60, cat: 'ritual', label: '黎明即起 / 静坐', note: '静坐四刻，如鼎之镇' },
+      { a: 6*60, b: 7*60, cat: 'study', label: '习寸大字一百' },
+      { a: 7*60, b: 8*60, cat: 'free', label: '早饭' },
+      { a: 8*60, b: 10*60, cat: 'admin', label: '见客 / 清理文件' },
+      { a: 10*60, b: 12*60, cat: 'study', label: '温经书 / 读史十页' },
+      { a: 12*60, b: 13*60, cat: 'free', label: '中饭' },
+      { a: 13*60, b: 14*60, cat: 'study', label: '饭后写字半时' },
+      { a: 14*60, b: 17*60, cat: 'admin', label: '办公 / 批札' },
+      { a: 17*60, b: 18*60+30, cat: 'free', label: '晚饭' },
+      { a: 18*60+30, b: 21*60, cat: 'study', label: '读集 / 温旧书', note: '酉刻至亥刻' },
+      { a: 21*60, b: 24*60, cat: 'sleep', label: '夜不出门 / 就寝' },
+    ],
+  },
+  {
+    id: 'xsw',
+    name: '许三多',
+    peakAge: 23,
+    tag: '老A集训 · 极限',
+    hint: '23岁 · 睡眠不足4小时 · 三次武装越野',
+    source: '<b>来源：</b>《士兵突击》剧本与训练制度逻辑。<b>许三多为虚构人物。</b>23岁生日当天首次实战击毙毒贩；老A集训期“睡觉都不超过四个小时就被喊起来训练”，日常包括早中晚三次武装越野10公里、负重25公斤以上。时间骨架参照特种部队集训逻辑推演，非真实传记记录。',
+    ask: '如果规矩已经定好了，你在最累的时候填得怎么样？',
+    segs: [
+      { a: 0, b: 3*60+30, cat: 'sleep', label: '睡眠', note: '不足4小时' },
+      { a: 3*60+30, b: 4*60, cat: 'ritual', label: '紧急集合 / 起床' },
+      { a: 4*60, b: 7*60, cat: 'body', label: '早间武装越野 10km', note: '负重25公斤以上' },
+      { a: 7*60, b: 8*60, cat: 'free', label: '早饭' },
+      { a: 8*60, b: 11*60+30, cat: 'labor', label: '操课 / 射击 / 格斗' },
+      { a: 11*60+30, b: 12*60, cat: 'free', label: '午饭' },
+      { a: 12*60, b: 13*60, cat: 'sleep', label: '午间短暂休息' },
+      { a: 13*60, b: 17*60, cat: 'labor', label: '操课 / 战术训练' },
+      { a: 17*60, b: 18*60, cat: 'body', label: '晚间武装越野 10km' },
+      { a: 18*60, b: 19*60, cat: 'free', label: '晚饭' },
+      { a: 19*60, b: 21*60, cat: 'study', label: '理论学习 / 写日记' },
+      { a: 21*60, b: 22*60, cat: 'body', label: '体能加练 / 力量训练' },
+      { a: 22*60, b: 24*60, cat: 'sleep', label: '睡眠' },
+    ],
+  },
+];
+
+/* ================================================================
+   4. 全局状态
+   ================================================================ */
+const KEY_MINE = 'flywheel.mine.v1';
+const $list     = document.getElementById('list');
+const $nowGrid  = document.getElementById('nowGrid');
+const $viewport = document.getElementById('viewport');
+
+let activeId = null;
+let mineSegs = [];
+let currentPage = 'now';
+const activeCache = {};
+let segIdCounter = 0;
+function newSegId() { return ++segIdCounter; }
+
+/* ================================================================
+   5. 持久化「我的」
+   ================================================================ */
+function loadMine() {
+  try {
+    const raw = localStorage.getItem(KEY_MINE);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return;
+    mineSegs = arr
+      .filter(s => s && typeof s.a === 'number' && typeof s.b === 'number')
+      .map(s => ({
+        _id: newSegId(), a: s.a, b: s.b,
+        cat: CAT[s.cat] ? s.cat : 'free',
+        label: s.label || '', note: s.note || '',
+      }));
+  } catch (e) { mineSegs = []; }
+}
+
+function saveMine() {
+  try {
+    localStorage.setItem(KEY_MINE, JSON.stringify(mineSegs.map(s => ({
+      a: s.a, b: s.b, cat: s.cat, label: s.label || '', note: s.note || ''
+    }))));
+  } catch (e) {}
+  renderTimeline();
+  renderEditPreview();
+  updateNow();
+}
+
+/* ================================================================
+   6. 条带构建
+   ================================================================ */
+function buildBar(segs) {
+  const norm = segs.map(s => {
+    let a = s.a, b = s.b;
+    if (b <= a) b = 24 * 60;
+    return { ...s, a: Math.max(0, Math.min(1440, a)), b: Math.max(0, Math.min(1440, b)) };
+  }).filter(s => s.b > s.a);
+  norm.sort((x, y) => x.a - y.a);
+  const filled = [];
+  let cursor = 0;
+  for (const s of norm) {
+    if (s.a > cursor) filled.push({ a: cursor, b: s.a, cat: 'free', label: '' });
+    filled.push(s);
+    cursor = Math.max(cursor, s.b);
+  }
+  if (cursor < 1440) filled.push({ a: cursor, b: 1440, cat: 'free', label: '' });
+  return filled;
+}
+
+function findSegAt(segs, mins) {
+  if (!segs || segs.length === 0) return null;
+  const filled = buildBar(segs);
+  for (const s of filled) if (mins >= s.a && mins < s.b) return s;
+  return null;
+}
+
+function findNextSeg(segs, mins) {
+  if (!segs || segs.length === 0) return null;
+  const filled = buildBar(segs);
+  for (let i = 0; i < filled.length; i++) {
+    if (mins >= filled[i].a && mins < filled[i].b) {
+      for (let j = i + 1; j < filled.length; j++) {
+        if (filled[j].label) return filled[j];
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
+function renderBar(segs) {
+  const filled = buildBar(segs);
+  let html = '';
+  for (const s of filled) {
+    const pct = ((s.b - s.a) / 1440) * 100;
+    const c = CAT[s.cat] || CAT.free;
+    const label = s.label || '';
+    const note = s.note || '';
+    const showLabel = pct > 2.6 && label;
+    html += `<div class="seg" data-a="${s.a}" data-b="${s.b}" data-label="${escHtml(label)}" data-note="${escHtml(note)}" data-color="${c.color}" style="flex:0 0 ${pct}%;background:${c.color}">`;
+    if (showLabel) html += `<div class="seg-label">${escHtml(label)}</div>`;
+    html += `</div>`;
+  }
+  return html;
+}
+
+/* ================================================================
+   7. 渲染 · 行程页
+   ================================================================ */
+function renderTimeline() {
+  let html = '';
+  for (const p of PEOPLE) {
+    const isActive = activeId === p.id;
+    html += `
+      <div class="mirror ${isActive ? 'active' : ''}" data-id="${p.id}">
+        <div class="m-head">
+          <div class="m-name">${p.name}</div>
+          <div class="m-age" id="age-${p.id}">${ageInnerHtml(p)}</div>
+          <div class="m-tag">${p.tag}</div>
+          <div class="m-hint">${p.hint}</div>
+        </div>
+        <div class="m-bar">
+          ${renderBar(p.segs)}
+          <div class="now-line"></div>
+        </div>
+        <div class="now-bubble"></div>
+        <div class="m-foot">
+          <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+        </div>
+        <div class="detail">
+          <div class="d-source">${p.source}
+            <span class="anchor-note">年龄锚定于 ${formatDate(getAnchorTs())} · 峰值为 ${p.peakAge} 岁</span>
+          </div>
+          ${p.segs.map(s => {
+            const c = CAT[s.cat] || CAT.free;
+            const note = s.note ? ` <span style="color:#5f6d82">— ${escHtml(s.note)}</span>` : '';
+            return `<div class="d-row">
+              <div class="d-time">${minToLabel(s.a)}</div>
+              <div class="d-text"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${c.color};margin-right:6px;vertical-align:middle"></span>${escHtml(s.label)}${note}</div>
+            </div>`;
+          }).join('')}
+          <div class="d-ask">↳ <b>对你的反问：</b>${escHtml(p.ask)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  const hasMine = mineSegs.length > 0;
+  html += `
+    <div class="mirror mine ${activeId === 'mine' ? 'active' : ''}" data-id="mine">
+      <div class="m-head">
+        <div class="m-name">你</div>
+        <div class="m-tag">${hasMine ? '昨日' : '未填写'}</div>
+        <div class="m-hint">${hasMine ? '基于「我的」页填写' : '去「我的」页填写'}</div>
+      </div>
+      <div class="m-bar">
+        ${hasMine ? renderBar(mineSegs) : `<div class="seg" style="flex:1;background:rgba(255,255,255,.03)"></div>`}
+        <div class="now-line"></div>
+      </div>
+      <div class="now-bubble"></div>
+      <div class="m-foot">
+        <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+      </div>
+      ${hasMine ? `
+      <div class="detail">
+        <div class="d-source"><b>来源：</b>你自己在「我的」页填写。只填了几个关键时段，其余自动归入“未记录”。</div>
+        ${[...mineSegs].sort((x, y) => x.a - y.a).map(s => {
+          const c = CAT[s.cat] || CAT.free;
+          return `<div class="d-row">
+            <div class="d-time">${minToLabel(s.a)}</div>
+            <div class="d-text"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${c.color};margin-right:6px;vertical-align:middle"></span>${escHtml(s.label || '未命名')}</div>
+          </div>`;
+        }).join('')}
+      </div>` : `<div class="mine-empty">还没有填写。切换到<b>「我的」</b>页，点「按此生成时段」或手动添加几条。</div>`}
+    </div>
+  `;
+
+  $list.innerHTML = html;
+  $list.querySelectorAll('.mirror').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.detail')) return;
+      const id = el.dataset.id;
+      activeId = activeId === id ? null : id;
+      renderTimeline();
+    });
+  });
+  updateNow();
+}
+
+/* ================================================================
+   8. 渲染 · 此刻页
+   ================================================================ */
+function buildNowCard(p) {
+  return `
+    <div class="nc" id="nc-${p.id}">
+      <div class="nc-head">
+        <span class="nc-dot"></span>
+        <span class="nc-name">${escHtml(p.name)}</span>
+        <span class="nc-age" id="nage-${p.id}">${ageInnerHtml(p)}</span>
+        <span class="nc-tag">${escHtml(p.tag)}</span>
+        <span class="nc-range">--:-- – --:--</span>
+      </div>
+      <div class="nc-act">—</div>
+      <div class="nc-note"></div>
+      <div class="nc-progress"><i style="width:0%"></i></div>
+      <div class="nc-foot"><span class="nc-remain">—</span><span class="nc-next"></span></div>
+    </div>
+  `;
+}
+
+function buildMineNowCard() {
+  return `
+    <div class="nc mine" id="nc-mine">
+      <div class="nc-head">
+        <span class="nc-dot"></span>
+        <span class="nc-name">你</span>
+        <span class="nc-tag">我的</span>
+        <span class="nc-range">--:-- – --:--</span>
+      </div>
+      <div class="nc-act idle">未填写</div>
+      <div class="nc-note">在「我的」页填写后，这里会自动显示</div>
+      <div class="nc-progress"><i style="width:0%"></i></div>
+      <div class="nc-foot"><span class="nc-remain">—</span><span class="nc-next"></span></div>
+    </div>
+  `;
+}
+
+function renderNowGrid() {
+  let html = '';
+  for (const p of PEOPLE) html += buildNowCard(p);
+  html += buildMineNowCard();
+  $nowGrid.innerHTML = html;
+}
+
+function updateCard(p, mins) {
+  const card = document.getElementById('nc-' + p.id);
+  if (!card) return;
+  const seg = findSegAt(p.segs, mins);
+  const next = findNextSeg(p.segs, mins);
+  const c = seg ? (CAT[seg.cat] || CAT.free) : CAT.free;
+  fillCard(card, seg, next, mins, c);
+}
+
+function updateMineCard(mins) {
+  const card = document.getElementById('nc-mine');
+  if (!card) return;
+  if (mineSegs.length === 0) {
+    const c = CAT.free;
+    card.querySelector('.nc-dot').style.background = c.glow;
+    card.querySelector('.nc-dot').style.boxShadow = '';
+    card.querySelector('.nc-act').textContent = '未填写';
+    card.querySelector('.nc-act').classList.add('idle');
+    card.querySelector('.nc-note').textContent = '在「我的」页填写后，这里会自动显示';
+    card.querySelector('.nc-range').textContent = '--:-- – --:--';
+    card.querySelector('.nc-progress i').style.width = '0%';
+    card.querySelector('.nc-remain').textContent = '—';
+    card.querySelector('.nc-next').innerHTML = '';
+    return;
+  }
+  const seg = findSegAt(mineSegs, mins);
+  const next = findNextSeg(mineSegs, mins);
+  const c = seg ? (CAT[seg.cat] || CAT.free) : CAT.free;
+  fillCard(card, seg, next, mins, c);
+}
+
+function fillCard(card, seg, next, mins, c) {
+  const $dot   = card.querySelector('.nc-dot');
+  const $act   = card.querySelector('.nc-act');
+  const $note  = card.querySelector('.nc-note');
+  const $range = card.querySelector('.nc-range');
+  const $prog  = card.querySelector('.nc-progress i');
+  const $remain= card.querySelector('.nc-remain');
+  const $next  = card.querySelector('.nc-next');
+
+  $dot.style.background = c.glow;
+  $dot.style.boxShadow = seg ? `0 0 6px ${c.glow}` : '';
+
+  if (!seg) {
+    $act.textContent = '—';
+    $act.classList.add('idle');
+    $note.textContent = '';
+    $range.textContent = '--:-- – --:--';
+    $prog.style.width = '0%';
+    $prog.style.background = c.glow;
+    $remain.textContent = '—';
+    $next.innerHTML = '';
+    return;
+  }
+
+  $act.textContent = seg.label || '—';
+  if (seg.label) $act.classList.remove('idle');
+  else $act.classList.add('idle');
+
+  $note.textContent = seg.note || '';
+  $range.textContent = `${minToLabel(seg.a)} – ${minToLabel(seg.b)}`;
+
+  const total = seg.b - seg.a;
+  const passed = Math.max(0, mins - seg.a);
+  const pct = total > 0 ? Math.min(100, (passed / total) * 100) : 0;
+  $prog.style.width = pct.toFixed(1) + '%';
+  $prog.style.background = c.glow;
+
+  const remain = Math.max(0, seg.b - mins);
+  const rh = Math.floor(remain / 60);
+  const rm = Math.round(remain % 60);
+  if (rh > 0) $remain.textContent = `还剩 ${rh} 小时 ${rm} 分`;
+  else if (rm > 0) $remain.textContent = `还剩 ${rm} 分`;
+  else $remain.textContent = '即将结束';
+
+  if (next && next.label) {
+    $next.innerHTML = `下一件 · <b>${escHtml(next.label)}</b> ${minToLabel(next.a)}`;
+  } else {
+    $next.innerHTML = '';
+  }
+}
+
+/* ================================================================
+   9. 年龄文本刷新（不重排，只改文本）
+   ================================================================ */
+function updateAgeText() {
+  const now = Date.now();
+  const anchor = getAnchorTs();
+  const elapsedMs = Math.max(0, now - anchor);
+  const elapsedYears = elapsedMs / MS_PER_YEAR;
+  const elapsedDays = Math.floor(elapsedMs / 86400_000);
+  const dayStr = elapsedDays > 0 ? `<small>+${elapsedDays}天</small>` : '';
+
+  for (const p of PEOPLE) {
+    const ageInt = Math.floor(p.peakAge + elapsedYears);
+    const inner = `${ageInt}岁${dayStr}`;
+
+    const a1 = document.getElementById('age-' + p.id);
+    if (a1) a1.innerHTML = inner;
+
+    const a2 = document.getElementById('nage-' + p.id);
+    if (a2) a2.innerHTML = inner;
+  }
+}
+
+/* ================================================================
+   10. 渲染 · 我的（编辑）
+   ================================================================ */
+const $editPreviewBar  = document.getElementById('editPreviewBar');
+const $editPreviewMeta = document.getElementById('editPreviewMeta');
+const $segList         = document.getElementById('segList');
+
+function renderEditPreview() {
+  if (mineSegs.length === 0) {
+    $editPreviewBar.innerHTML = `<div class="seg" style="flex:1;background:rgba(255,255,255,.03)"></div>`;
+    $editPreviewMeta.textContent = '0 段';
+    return;
+  }
+  $editPreviewBar.innerHTML = renderBar(mineSegs);
+  $editPreviewMeta.textContent = mineSegs.length + ' 段';
+}
+
+function renderSegList() {
+  if (mineSegs.length === 0) {
+    $segList.innerHTML = `<div class="seg-empty">还没有时段。<br>点右上角「+ 添加时段」，或用上方「快速生成」。</div>`;
+    return;
+  }
+  const sorted = [...mineSegs].sort((x, y) => x.a - y.a);
+  $segList.innerHTML = sorted.map(s => `
+    <div class="seg-row" data-id="${s._id}">
+      <div class="sr-line1">
+        <input type="time" class="sr-a" data-id="${s._id}" value="${minToLabel(s.a)}">
+        <span class="sr-sep">–</span>
+        <input type="time" class="sr-b" data-id="${s._id}" value="${minToLabel(s.b)}">
+        <button class="sr-del" data-id="${s._id}" aria-label="删除">✕</button>
+      </div>
+      <div class="sr-line2">
+        <select class="sr-cat" data-id="${s._id}">
+          ${CAT_OPTIONS.map(o => `<option value="${o.value}" ${o.value === s.cat ? 'selected' : ''}>${o.label}</option>`).join('')}
+        </select>
+        <input type="text" class="sr-label" data-id="${s._id}" value="${escHtml(s.label || '')}" placeholder="标签（可选）">
+      </div>
+    </div>
+  `).join('');
+}
+
+$segList.addEventListener('change', e => {
+  const t = e.target;
+  const id = +t.dataset.id;
+  if (!id) return;
+  const seg = mineSegs.find(s => s._id === id);
+  if (!seg) return;
+  if (t.classList.contains('sr-a')) seg.a = tToMin(t.value);
+  else if (t.classList.contains('sr-b')) seg.b = tToMin(t.value);
+  else if (t.classList.contains('sr-cat')) seg.cat = t.value;
+  else if (t.classList.contains('sr-label')) seg.label = t.value;
+  saveMine();
+  renderSegList();
+});
+
+$segList.addEventListener('click', e => {
+  if (!e.target.classList.contains('sr-del')) return;
+  const id = +e.target.dataset.id;
+  mineSegs = mineSegs.filter(s => s._id !== id);
+  saveMine();
+  renderSegList();
+});
+
+document.getElementById('segAdd').addEventListener('click', () => {
+  let a = 9 * 60, b = 10 * 60;
+  if (mineSegs.length > 0) {
+    const sorted = [...mineSegs].sort((x, y) => x.a - y.a);
+    const last = sorted[sorted.length - 1];
+    a = Math.min(Math.max(last.b, 0), 23 * 60);
+    b = Math.min(a + 60, 24 * 60);
+    if (b <= a) a = Math.max(0, 24 * 60 - 60);
+    if (b <= a) b = 24 * 60;
+  }
+  mineSegs.push({ _id: newSegId(), a, b, cat: 'deep', label: '深度块', note: '' });
+  saveMine();
+  renderSegList();
+  const wrap = document.querySelector('.page-edit');
+  if (wrap) wrap.scrollTo({ top: wrap.scrollHeight, behavior: 'smooth' });
+});
+
+const $qkWake    = document.getElementById('qkWake');
+const $qkDeep    = document.getElementById('qkDeep');
+const $qkDeepLen = document.getElementById('qkDeepLen');
+const $qkEnd     = document.getElementById('qkEnd');
+const $qkSleep   = document.getElementById('qkSleep');
+const $qkNap     = document.getElementById('qkNap');
+
+function buildFromQuick() {
+  const wake   = tToMin($qkWake.value || '07:30');
+  const deep   = tToMin($qkDeep.value || '09:30');
+  const deepLen= Math.max(0, parseFloat($qkDeepLen.value) || 0) * 60;
+  const end    = tToMin($qkEnd.value || '19:00');
+  const sleep  = tToMin($qkSleep.value || '23:30');
+  const nap    = Math.max(0, parseFloat($qkNap.value) || 0) * 60;
+  const segs = [];
+
+  if (sleep > wake) {
+    segs.push({ a: 0, b: wake, cat: 'sleep', label: '睡眠', note: '' });
+    segs.push({ a: sleep, b: 24*60, cat: 'sleep', label: '睡眠', note: '' });
+  } else if (sleep < wake) {
+    segs.push({ a: sleep, b: wake, cat: 'sleep', label: '睡眠', note: '' });
+  }
+
+  if (deep > wake) {
+    segs.push({ a: wake, b: Math.min(deep, wake+60), cat: 'ritual', label: '起床 / 过渡', note: '' });
+    if (deep > wake + 60) segs.push({ a: wake+60, b: deep, cat: 'free', label: '未记录', note: '' });
+  }
+
+  const deepEnd = Math.min(deep + deepLen, end);
+  if (deepEnd > deep) segs.push({ a: deep, b: deepEnd, cat: 'deep', label: '深度块', note: '' });
+
+  let lastEnd = deepEnd;
+  if (nap > 0) {
+    const napStart = Math.min(deepEnd + 30, end - nap);
+    if (napStart > deepEnd && napStart + nap <= end) {
+      segs.push({ a: deepEnd, b: napStart, cat: 'free', label: '未记录', note: '' });
+      segs.push({ a: napStart, b: napStart + nap, cat: 'body', label: '午休', note: '' });
+      lastEnd = napStart + nap;
+    }
+  }
+  if (end > lastEnd) segs.push({ a: lastEnd, b: end, cat: 'labor', label: '工作 / 杂务', note: '' });
+  if (sleep > end) segs.push({ a: end, b: sleep, cat: 'free', label: '晚间 / 未记录', note: '' });
+  return segs;
+}
+
+document.getElementById('qkGenerate').addEventListener('click', () => {
+  if (mineSegs.length > 0 && !confirm('会覆盖当前所有时段，确定生成吗？')) return;
+  mineSegs = buildFromQuick().map(s => ({ ...s, _id: newSegId() }));
+  saveMine();
+  renderSegList();
+  const wrap = document.querySelector('.page-edit');
+  if (wrap) wrap.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+document.getElementById('editClear').addEventListener('click', () => {
+  if (mineSegs.length === 0) return;
+  if (!confirm('清空所有时段？')) return;
+  mineSegs = [];
+  saveMine();
+  renderSegList();
+});
+
+/* ================================================================
+   11. 每秒更新
+   ================================================================ */
+const $clockDate  = document.getElementById('clockDate');
+const $clockTime  = document.getElementById('clockTime');
+const $nowBigTime = document.getElementById('nowBigTime');
+const $nowBigSec  = document.getElementById('nowBigSec');
+const $nowBigDate = document.getElementById('nowBigDate');
+const WEEKDAYS = ['日','一','二','三','四','五','六'];
+
+function updateNow() {
+  const now = new Date();
+  const mins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const pct = (mins / 1440) * 100;
+  const hh = pad2(now.getHours());
+  const mm = pad2(now.getMinutes());
+  const ss = pad2(now.getSeconds());
+  const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 週${WEEKDAYS[now.getDay()]}`;
+
+  $clockDate.textContent = dateStr;
+  $clockTime.textContent = `${hh}:${mm}:${ss}`;
+  if ($nowBigTime && $nowBigTime.childNodes[0]) {
+    $nowBigTime.childNodes[0].nodeValue = `${hh}:${mm}`;
+    $nowBigSec.textContent = `:${ss}`;
+    $nowBigDate.textContent = dateStr;
+  }
+
+  // 年龄文本每秒刷新（字符串很短，性能可以忽略）
+  updateAgeText();
+
+  for (const p of PEOPLE) updateCard(p, mins);
+  updateMineCard(mins);
+
+  $list.querySelectorAll('.mirror').forEach(mirror => {
+    const id = mirror.dataset.id;
+    const bar = mirror.querySelector('.m-bar');
+    const line = mirror.querySelector('.now-line');
+    const bubble = mirror.querySelector('.now-bubble');
+    if (!bar || !line || !bubble) return;
+    const segs = bar.querySelectorAll('.seg[data-a]');
+    if (segs.length === 0) { line.classList.remove('show'); bubble.classList.remove('show'); return; }
+
+    line.classList.add('show');
+    line.style.left = pct + '%';
+
+    let active = null;
+    segs.forEach(s => {
+      const a = +s.dataset.a, b = +s.dataset.b;
+      s.classList.remove('now');
+      if (mins >= a && mins < b) { s.classList.add('now'); active = s; }
+    });
+
+    if (!active || !active.dataset.label) { bubble.classList.remove('show'); activeCache[id] = ''; return; }
+
+    const label = active.dataset.label;
+    const note = active.dataset.note || '';
+    const color = active.dataset.color || '#888';
+    const key = active.dataset.a + '|' + active.dataset.b + '|' + label + '|' + note;
+
+    if (activeCache[id] !== key) {
+      activeCache[id] = key;
+      bubble.innerHTML =
+        `<span style="color:${color};font-weight:800">●</span> ` +
+        `<span style="color:#e6ecf7;font-weight:650">${escHtml(label)}</span>` +
+        (note ? ` <span style="color:#6b7a90">· ${escHtml(note)}</span>` : '');
+      bubble.classList.add('show');
+    }
+
+    const barW = bar.offsetWidth;
+    const bubbleW = bubble.offsetWidth;
+    let lp;
+    if (bubbleW > barW - 8) lp = barW / 2;
+    else {
+      lp = (pct / 100) * barW;
+      lp = Math.max(bubbleW / 2 + 4, Math.min(barW - bubbleW / 2 - 4, lp));
+    }
+    bubble.style.left = lp + 'px';
+  });
+}
+
+/* ================================================================
+   12. 翻页
+   ================================================================ */
+const PAGE_ORDER = ['now', 'tl', 'edit'];
+
+function switchPage(page) {
+  if (page === currentPage) return;
+  if (!PAGE_ORDER.includes(page)) return;
+  currentPage = page;
+  $viewport.dataset.page = page;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.page === page);
+  });
+  if (page === 'tl') updateNow();
+  if (page === 'edit') { renderEditPreview(); renderSegList(); }
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchPage(t.dataset.page));
+});
+
+let touch = { x: 0, y: 0, active: false, horizontal: null };
+
+$viewport.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) return;
+  touch.x = e.touches[0].clientX;
+  touch.y = e.touches[0].clientY;
+  touch.active = true;
+  touch.horizontal = null;
+}, { passive: true });
+
+$viewport.addEventListener('touchmove', e => {
+  if (!touch.active) return;
+  const dx = e.touches[0].clientX - touch.x;
+  const dy = e.touches[0].clientY - touch.y;
+  if (touch.horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+    touch.horizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+  }
+}, { passive: true });
+
+$viewport.addEventListener('touchend', e => {
+  if (!touch.active) { touch.active = false; return; }
+  if (!touch.horizontal) { touch.active = false; return; }
+  const dx = e.changedTouches[0].clientX - touch.x;
+  const dy = e.changedTouches[0].clientY - touch.y;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    const idx = PAGE_ORDER.indexOf(currentPage);
+    if (dx < 0 && idx < PAGE_ORDER.length - 1) switchPage(PAGE_ORDER[idx + 1]);
+    else if (dx > 0 && idx > 0) switchPage(PAGE_ORDER[idx - 1]);
+  }
+  touch.active = false;
+}, { passive: true });
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const idx = PAGE_ORDER.indexOf(currentPage);
+  if (e.key === 'ArrowRight' && idx < PAGE_ORDER.length - 1) switchPage(PAGE_ORDER[idx + 1]);
+  if (e.key === 'ArrowLeft' && idx > 0) switchPage(PAGE_ORDER[idx - 1]);
+});
+
+/* ================================================================
+   13. 启动
+   ================================================================ */
+getAnchorTs();
+const $anchorDate = document.getElementById('anchorDate');
+if ($anchorDate) $anchorDate.textContent = formatDate(getAnchorTs());
+
+loadMine();
+renderNowGrid();
+renderTimeline();
+renderEditPreview();
+renderSegList();
+updateNow();
+setInterval(updateNow, 1000);
+
+})();
+</script>
+</body>
+</html>
